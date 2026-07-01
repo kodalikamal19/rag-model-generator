@@ -1,0 +1,19 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Environment credentials (CRITICAL: DO NOT COMMIT API KEYS)
+.env
+
+# Vectorstore database
+# Note: By default, we DO NOT ignore 'vectorstore/' and 'config.json' so they can be pushed
+# to the cloud as a pre-built static database. 
+# If you want a completely empty database on the cloud, uncomment the line below:
+# vectorstore/

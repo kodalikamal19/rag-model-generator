@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered RAG Builder Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: rgba(17, 24, 39, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --accent-primary: #8b5cf6; /* Violet */
+            --accent-secondary: #3b82f6; /* Blue */
+            --accent-success: #10b981; /* Green */
+            --accent-warning: #f59e0b; /* Amber */
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --glass-glow: rgba(139, 92, 246, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, var(--bg-color) 70%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        header {
+            width: 100%;
+            max-width: 1200px;
+            padding: 2rem 1.5rem 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span {
+            font-size: 1.5rem;
+        }
+
+        .status-badge {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--accent-success);
+            padding: 0.4rem 0.8rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .status-badge.offline {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: var(--accent-warning);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            flex: 1;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 1.25rem;
+            padding: 2rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+        }
+
+        h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        textarea, input, select {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 0.8rem 1rem;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            outline: none;
+            width: 100%;
+        }
+
+        textarea:focus, input:focus, select:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            color: white;
+            border: none;
+            padding: 0.9rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: transform 0.15s ease, opacity 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .btn:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #4b5563;
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.7;
+        }
+
+        /* Config Grid */
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .config-card {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .config-card .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .config-card .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #e8eaf6;
+        }
+
+        .config-card .value.active {
+            color: var(--accent-success);
+        }
+
+        /* Ingestion Panel */
+        .doc-list-container {
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            background: rgba(15, 23, 42, 0.5);
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+
+        .doc-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            font-size: 0.85rem;
+        }
+
+        .doc-item:last-child {
+            border-bottom: none;
+        }
+
+        .doc-name {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .doc-ext {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.3rem;
+            border-radius: 0.25rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .ext-pdf { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .ext-txt { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .ext-docx { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+
+        .log-console {
+            background: #030712;
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            font-family: 'Space Grotesk', monospace;
+            font-size: 0.8rem;
+            color: #34d399;
+            height: 120px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        /* Chat Pane */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 480px;
+            justify-content: space-between;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            max-width: 85%;
+            padding: 0.8rem 1.2rem;
+            border-radius: 1rem;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .message.user {
+            background: var(--accent-primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0.25rem;
+        }
+
+        .message.bot {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            align-self: flex-start;
+            border-bottom-left-radius: 0.25rem;
+        }
+
+        .sources-list {
+            margin-top: 0.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .source-pill {
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid rgba(96, 165, 250, 0.2);
+            color: #93c5fd;
+            font-size: 0.75rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 9999px;
+        }
+
+        .chat-input-bar {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .chat-input-bar input {
+            flex: 1;
+        }
+
+        .chat-input-bar button {
+            width: auto;
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            padding: 0.3rem 0.6rem;
+            border-radius: 0.4rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .tab-btn.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <span>🤖</span> RAG Builder Dashboard
+        </div>
+        <div id="status-badge" class="status-badge offline">
+            <span class="spinner" id="status-spinner"></span> Checking status
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Configuration & Ingestion Panel -->
+        <div class="panel">
+            <div>
+                <h2>⚙️ Pipeline Configuration</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">
+                    Analyze natural language requirements and build the pipeline configurations.
+                </p>
+            </div>
+
+            <div class="form-group">
+                <label for="req-desc">Plain English Requirements</label>
+                <textarea id="req-desc" placeholder="Describe your dataset, accuracy, citations, speed, etc.">I have around 100 PDF files. I need highly accurate answers with citations. Speed is not important. Use OpenAI.</textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="llm-choice">LLM Provider</label>
+                    <select id="llm-choice">
+                        <option value="openai">OpenAI (GPT-4o-mini)</option>
+                        <option value="gemini">Google Gemini (Gemini 1.5 Flash)</option>
+                        <option value="local">Local (Ollama llama3)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="doc-dir">Docs Directory</label>
+                    <input type="text" id="doc-dir" value="./documents">
+                </div>
+            </div>
+
+            <div class="form-group" id="api-key-group">
+                <label for="api-key">API Key (OpenAI / Gemini)</label>
+                <input type="password" id="api-key" placeholder="Paste your API key here (saved to .env)">
+            </div>
+
+            <button class="btn" id="btn-configure">
+                <span>⚡</span> Analyze & Build Configuration
+            </button>
+
+            <!-- Config Grid Results -->
+            <div class="config-grid">
+                <div class="config-card">
+                    <span class="label">Vector Database</span>
+                    <span class="value" id="cfg-db">-</span>
+                </div>
+                <div class="config-card">
+                    <span class="label">Chunk Size / Overlap</span>
+                    <span class="value" id="cfg-chunk">-</span>
+                </div>
+                <div class="config-card">
+                    <span class="label">Retriever Strategy</span>
+                    <span class="value" id="cfg-retriever">-</span>
+                </div>
+                <div class="config-card">
+                    <span class="label">Citations Source</span>
+                    <span class="value" id="cfg-citations">-</span>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 0.5rem 0;">
+
+            <div>
+                <h2>📂 Document Ingestion</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">
+                    View documents and build the vector database representation.
+                </p>
+            </div>
+
+            <div class="form-group">
+                <label>Found Files in Folder</label>
+                <div class="doc-list-container" id="doc-list">
+                    <div style="padding: 0.5rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+                        No documents loaded.
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn" id="btn-ingest">
+                <span>🔄</span> Ingest & Vectorize Documents
+            </button>
+
+            <div class="log-console" id="log-console">Logs will appear here when ingestion processes...</div>
+        </div>
+
+        <!-- Chat Query Panel -->
+        <div class="panel">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                    <h2>💬 RAG Chat Endpoint Query</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">
+                        Run queries against your ingested dataset.
+                    </p>
+                </div>
+                <button class="btn" id="btn-show-api" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; width: auto; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));">
+                    🔌 API Endpoint Code
+                </button>
+            </div>
+
+            <div class="api-integration-card" id="api-integration" style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1rem; display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                    <span style="font-size: 0.85rem; font-weight: 600; color: #a78bfa;">🔌 API Code Snippets (Dynamic URL)</span>
+                    <button id="btn-close-snippets" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem;">✕</button>
+                </div>
+                <div style="display: flex; gap: 0.4rem; margin-bottom: 0.8rem; overflow-x: auto;">
+                    <button class="tab-btn active" id="btn-tab-curl">cURL</button>
+                    <button class="tab-btn" id="btn-tab-python">Python</button>
+                    <button class="tab-btn" id="btn-tab-js">JS</button>
+                    <button class="tab-btn" id="btn-tab-get">GET (URL)</button>
+                </div>
+                <pre id="snippet-code" style="background: #030712; padding: 0.8rem; border-radius: 0.5rem; font-family: monospace; font-size: 0.75rem; color: #a78bfa; overflow-x: auto; white-space: pre; border: 1px solid rgba(255,255,255,0.05); max-height: 140px; margin-top: 0.2rem;"></pre>
+            </div>
+
+            <div class="chat-container">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message bot">
+                        Hello! Once you configure your pipeline and ingest documents, type your question below to retrieve answers from your custom dataset!
+                    </div>
+                </div>
+
+                <div class="chat-input-bar">
+                    <input type="text" id="chat-input" placeholder="Ask a question about your documents..." disabled>
+                    <button class="btn" id="btn-send" disabled>Ask</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Base URL (assumed same origin)
+        const apiBase = "";
+
+        // Elements
+        const statusBadge = document.getElementById("status-badge");
+        const statusSpinner = document.getElementById("status-spinner");
+        const docList = document.getElementById("doc-list");
+        const logConsole = document.getElementById("log-console");
+        const chatMessages = document.getElementById("chat-messages");
+        const chatInput = document.getElementById("chat-input");
+        const btnSend = document.getElementById("btn-send");
+        const btnConfigure = document.getElementById("btn-configure");
+        const btnIngest = document.getElementById("btn-ingest");
+        
+        // Form Elements
+        const reqDesc = document.getElementById("req-desc");
+        const llmChoice = document.getElementById("llm-choice");
+        const docDir = document.getElementById("doc-dir");
+        const apiKey = document.getElementById("api-key");
+        const apiKeyGroup = document.getElementById("api-key-group");
+
+        // Config display
+        const cfgDb = document.getElementById("cfg-db");
+        const cfgChunk = document.getElementById("cfg-chunk");
+        const cfgRetriever = document.getElementById("cfg-retriever");
+        const cfgCitations = document.getElementById("cfg-citations");
+
+        // Hide API key for local model
+        llmChoice.addEventListener("change", () => {
+            if (llmChoice.value === "local") {
+                apiKeyGroup.classList.add("hidden");
+            } else {
+                apiKeyGroup.classList.remove("hidden");
+            }
+        });
+
+        // Update health status
+        async function updateHealth() {
+            try {
+                const response = await fetch(`${apiBase}/health`);
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Update configuration cards
+                    cfgDb.innerText = data.config.vector_db.toUpperCase();
+                    cfgChunk.innerText = `Size: ${data.config.llm_type === 'openai' ? '400/100' : '500/100'}`; // placeholder text
+                    cfgRetriever.innerText = data.config.citations_enabled ? "MMR (Diverse)" : "Similarity";
+                    cfgCitations.innerText = data.config.citations_enabled ? "YES" : "NO";
+
+                    if (data.pipeline_initialized) {
+                        statusBadge.className = "status-badge";
+                        statusBadge.innerHTML = "● Online";
+                        chatInput.disabled = false;
+                        btnSend.disabled = false;
+                    } else {
+                        statusBadge.className = "status-badge offline";
+                        statusBadge.innerHTML = "▲ Ingestion Needed";
+                        chatInput.disabled = true;
+                        btnSend.disabled = true;
+                    }
+                }
+            } catch (err) {
+                statusBadge.className = "status-badge offline";
+                statusBadge.innerHTML = "Offline";
+            }
+        }
+
+        // Fetch document lists
+        async function loadDocumentsList() {
+            try {
+                const response = await fetch(`${apiBase}/api/documents`);
+                if (response.ok) {
+                    const data = await response.json();
+                    docList.innerHTML = "";
+                    if (data.documents.length === 0) {
+                        docList.innerHTML = `<div style="padding: 0.5rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">No files found in ${data.path}</div>`;
+                        return;
+                    }
+                    data.documents.forEach(f => {
+                        const ext = f.split('.').pop();
+                        const div = document.createElement("div");
+                        div.className = "doc-item";
+                        div.innerHTML = `
+                            <div class="doc-name">
+                                <span class="doc-ext ext-${ext}">${ext}</span>
+                                <span>${f}</span>
+                            </div>
+                        `;
+                        docList.appendChild(div);
+                    });
+                }
+            } catch (err) {
+                console.error("Error loading docs:", err);
+            }
+        }
+
+        // Action: Configure Pipeline
+        btnConfigure.addEventListener("click", async () => {
+            btnConfigure.disabled = true;
+            btnConfigure.innerHTML = `<span class="spinner"></span> Analyzing...`;
+            
+            const payload = {
+                description: reqDesc.value,
+                llm_choice: llmChoice.value,
+                api_key: apiKey.value || null,
+                documents_dir: docDir.value
+            };
+
+            try {
+                const response = await fetch(`${apiBase}/api/configure`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    alert("Pipeline successfully configured!");
+                    
+                    // Show updated values
+                    cfgDb.innerText = data.config.vector_db_type.toUpperCase();
+                    cfgChunk.innerText = `S: ${data.config.chunk_size} / O: ${data.config.chunk_overlap}`;
+                    cfgRetriever.innerText = data.config.retriever_type.toUpperCase();
+                    cfgCitations.innerText = data.config.citations_enabled ? "YES" : "NO";
+                    
+                    // Clear API key input for security
+                    apiKey.value = "";
+                    
+                    await loadDocumentsList();
+                    await updateHealth();
+                } else {
+                    const err = await response.json();
+                    alert(`Configuration failed: ${err.detail || 'Unknown error'}`);
+                }
+            } catch (err) {
+                alert(`Error: ${err.message}`);
+            } finally {
+                btnConfigure.disabled = false;
+                btnConfigure.innerHTML = `<span>⚡</span> Analyze & Build Configuration`;
+            }
+        });
+
+        // Action: Ingest Documents
+        btnIngest.addEventListener("click", async () => {
+            btnIngest.disabled = true;
+            btnIngest.innerHTML = `<span class="spinner"></span> Ingesting...`;
+            logConsole.innerText = "Ingestion started. Reading files and generating vector store indices...";
+            
+            try {
+                const response = await fetch(`${apiBase}/api/ingest`, {
+                    method: "POST"
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    logConsole.innerText = `SUCCESS!\nProcessed: ${data.files_processed} files.\nCreated: ${data.chunks_created} text chunks.\nDetails: ${JSON.stringify(data.details || {})}\nMessage: ${data.message}`;
+                    await updateHealth();
+                } else {
+                    const err = await response.json();
+                    logConsole.innerText = `ERROR: ${err.detail || 'Unknown error'}`;
+                }
+            } catch (err) {
+                logConsole.innerText = `EXCEPTION: ${err.message}`;
+            } finally {
+                btnIngest.disabled = false;
+                btnIngest.innerHTML = `<span>🔄</span> Ingest & Vectorize Documents`;
+            }
+        });
+
+        // Action: Chat Send
+        async function sendQuery() {
+            const question = chatInput.value.trim();
+            if (!question) return;
+
+            // Add user message
+            addMessage(question, "user");
+            chatInput.value = "";
+
+            // Add loading placeholder bot message
+            const loadingId = addMessage("Thinking...", "bot loading");
+
+            try {
+                const response = await fetch(`${apiBase}/query`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ question: question })
+                });
+
+                const loadingMsg = document.getElementById(loadingId);
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Render final response
+                    loadingMsg.classList.remove("loading");
+                    loadingMsg.innerHTML = `
+                        <div>${data.answer}</div>
+                        ${data.sources.length > 0 ? `
+                            <div class="sources-list">
+                                ${data.sources.map(src => `<span class="source-pill">📄 ${src}</span>`).join('')}
+                            </div>
+                        ` : ''}
+                    `;
+                } else {
+                    const err = await response.json();
+                    loadingMsg.innerText = `⚠️ Error: ${err.detail || 'Could not retrieve answer'}`;
+                }
+            } catch (err) {
+                const loadingMsg = document.getElementById(loadingId);
+                loadingMsg.innerText = `⚠️ Error: ${err.message}`;
+            }
+        }
+
+        // Add message helper
+        let msgCounter = 0;
+        function addMessage(text, className) {
+            msgCounter++;
+            const msgId = `msg-${msgCounter}`;
+            const div = document.createElement("div");
+            div.id = msgId;
+            div.className = `message ${className}`;
+            div.innerText = text;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return msgId;
+        }
+
+        btnSend.addEventListener("click", sendQuery);
+        chatInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") sendQuery();
+        });
+
+        // API Code Snippets Generator Logic
+        const btnShowApi = document.getElementById("btn-show-api");
+        const apiIntegration = document.getElementById("api-integration");
+        const btnCloseSnippets = document.getElementById("btn-close-snippets");
+        const snippetCode = document.getElementById("snippet-code");
+        
+        const tabCurl = document.getElementById("btn-tab-curl");
+        const tabPython = document.getElementById("btn-tab-python");
+        const tabJs = document.getElementById("btn-tab-js");
+        const tabGet = document.getElementById("btn-tab-get");
+
+        let activeTab = "curl";
+
+        function generateCodeSnippet(tab) {
+            const origin = window.location.origin;
+            if (tab === "curl") {
+                return `curl -X POST "${origin}/query" \\
+     -H "Content-Type: application/json" \\
+     -d '{"question": "What is the remote work policy at Acme Corp?"}'`;
+            } else if (tab === "python") {
+                return `import requests
+
+url = "${origin}/query"
+payload = {"question": "What is the remote work policy at Acme Corp?"}
+
+response = requests.post(url, json=payload).json()
+print("Answer:", response["answer"])
+print("Sources:", response["sources"])`;
+            } else if (tab === "js") {
+                return `const response = await fetch("${origin}/query", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ question: "What is the remote work policy at Acme Corp?" })
+});
+
+const data = await response.json();
+console.log("Answer:", data.answer);
+console.log("Sources:", data.sources);`;
+            } else if (tab === "get") {
+                return `${origin}/query?question=What+is+the+remote+work+policy+at+Acme+Corp%3F`;
+            }
+        }
+
+        function switchSnippetTab(tab) {
+            activeTab = tab;
+            const tabs = [
+                { el: tabCurl, name: "curl" },
+                { el: tabPython, name: "python" },
+                { el: tabJs, name: "js" },
+                { el: tabGet, name: "get" }
+            ];
+            
+            tabs.forEach(t => {
+                if (t.name === tab) {
+                    t.el.classList.add("active");
+                } else {
+                    t.el.classList.remove("active");
+                }
+            });
+            
+            snippetCode.textContent = generateCodeSnippet(tab);
+        }
+
+        btnShowApi.addEventListener("click", () => {
+            if (apiIntegration.style.display === "none" || !apiIntegration.style.display) {
+                apiIntegration.style.display = "block";
+                switchSnippetTab(activeTab);
+            } else {
+                apiIntegration.style.display = "none";
+            }
+        });
+
+        btnCloseSnippets.addEventListener("click", () => {
+            apiIntegration.style.display = "none";
+        });
+
+        tabCurl.addEventListener("click", () => switchSnippetTab("curl"));
+        tabPython.addEventListener("click", () => switchSnippetTab("python"));
+        tabJs.addEventListener("click", () => switchSnippetTab("js"));
+        tabGet.addEventListener("click", () => switchSnippetTab("get"));
+
+        // Initial setup
+        updateHealth();
+        loadDocumentsList();
+        
+        // Interval health polling
+        setInterval(updateHealth, 5000);
+    </script>
+</body>
+</html>

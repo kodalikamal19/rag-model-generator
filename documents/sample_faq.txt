@@ -1,0 +1,13 @@
+Frequently Asked Questions - Acme Corp
+
+Q: What is the remote work policy at Acme Corp?
+A: Acme Corp allows employees to work remotely up to three days per week, subject to approval from their department manager.
+
+Q: Is there an internet stipend?
+A: Yes, remote and hybrid employees receive a high-speed internet allowance of $50 per month to support their home workspace setup.
+
+Q: What are the core working hours?
+A: The core hours when all employees should be online and available are from 10:00 AM to 3:00 PM EST.
+
+Q: Who is the CEO of Acme Corp?
+A: The CEO of Acme Corp is Dr. Jane Foster, appointed in January 2024.

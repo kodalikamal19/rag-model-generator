@@ -1,0 +1,12 @@
+{
+    "chunk_size": 500,
+    "chunk_overlap": 100,
+    "vector_db_type": "chroma",
+    "embedding_model_type": "openai",
+    "llm_type": "openai",
+    "llm_model_name": "gpt-4o-mini",
+    "retriever_type": "similarity",
+    "citations_enabled": false,
+    "documents_dir": "./documents",
+    "vectorstore_dir": "./vectorstore"
+}
