@@ -57,6 +57,9 @@ def get_embeddings_model():
     if config.EMBEDDING_MODEL_TYPE == "openai":
         from langchain_openai import OpenAIEmbeddings
         return OpenAIEmbeddings(openai_api_key=config.OPENAI_API_KEY)
+    elif config.EMBEDDING_MODEL_TYPE == "gemini":
+        from langchain_google_genai import GoogleGenerativeAIEmbeddings
+        return GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=config.GOOGLE_API_KEY)
     else:
         try:
             from langchain_community.embeddings import HuggingFaceEmbeddings

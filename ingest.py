@@ -28,6 +28,12 @@ def get_embeddings_model():
         from langchain_openai import OpenAIEmbeddings
         print("Initializing OpenAI Embeddings...")
         return OpenAIEmbeddings(openai_api_key=config.OPENAI_API_KEY)
+    elif config.EMBEDDING_MODEL_TYPE == "gemini":
+        if not config.GOOGLE_API_KEY:
+            raise ValueError("GOOGLE_API_KEY is not set. Please configure it first.")
+        from langchain_google_genai import GoogleGenerativeAIEmbeddings
+        print("Initializing Google Gemini Embeddings...")
+        return GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=config.GOOGLE_API_KEY)
     else:
         # Default fallback to HuggingFace
         try:

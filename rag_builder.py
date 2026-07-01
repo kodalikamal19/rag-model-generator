@@ -57,13 +57,13 @@ def parse_requirements(description: str, llm_choice: str):
     # Map default model names
     if llm_type == "openai":
         llm_model_name = "gpt-4o-mini"
-        embedding_model_type = "openai"  # OpenAI LLM can default to OpenAI embeddings if key is provided
+        embedding_model_type = "openai"  # OpenAI cloud-based embeddings
     elif llm_type == "gemini":
         llm_model_name = "gemini-1.5-flash"
-        embedding_model_type = "huggingface"  # Free HuggingFace embeddings
+        embedding_model_type = "gemini"  # Gemini cloud-based embeddings
     else:
         llm_model_name = "llama3"
-        embedding_model_type = "huggingface"  # Free HuggingFace embeddings
+        embedding_model_type = "huggingface"  # Free local HuggingFace embeddings
         
     return {
         "chunk_size": chunk_size,
