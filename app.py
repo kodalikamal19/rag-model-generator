@@ -4,7 +4,7 @@ import json
 import warnings
 import importlib
 from typing import List, Any, Optional
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, Query
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -420,7 +420,7 @@ async def query_rag(request: QueryRequest):
     return await execute_query_logic(request.question)
 
 @app.get("/query", response_model=QueryResponse)
-async def query_rag_get(question: str = Field(..., description="The query question to search.")):
+async def query_rag_get(question: str = Query(..., description="The query question to search.")):
     """Processes a user question against the vectorstore via URL query parameter: /query?question=Your+Question"""
     return await execute_query_logic(question)
 
