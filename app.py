@@ -199,8 +199,12 @@ def init_rag_pipeline():
 # Lifespan context manager for startup/shutdown
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Try initialization at startup
-    init_rag_pipeline()
+    try:
+        # Try initialization at startup, but ignore exceptions so the server boots successfully
+        init_rag_pipeline()
+    except Exception as e:
+        print(f"Warning: Failed to initialize RAG pipeline during startup: {e}")
+        print("The server remains online so you can configure parameters via the web dashboard.")
     yield
     # Cleanup if needed
 
