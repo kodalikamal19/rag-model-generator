@@ -4,7 +4,7 @@ import json
 import warnings
 import importlib
 from typing import List, Any, Optional
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -315,6 +315,38 @@ async def get_documents():
             files.append(f)
             
     return {"documents": files, "path": docs_dir}
+
+@app.post("/api/upload")
+async def upload_documents(files: List[UploadFile] = File(...)):
+    """Saves uploaded files (PDF, TXT, DOCX) to the documents directory."""
+    docs_dir = os.path.abspath(config.DOCUMENTS_DIR)
+    os.makedirs(docs_dir, exist_ok=True)
+    
+    saved_files = []
+    errors = []
+    
+    for file in files:
+        if not file.filename.endswith((".pdf", ".txt", ".docx")):
+            errors.append(f"Rejected {file.filename}: Unsupported file format (only PDF, TXT, DOCX allowed).")
+            continue
+        try:
+            file_path = os.path.join(docs_dir, file.filename)
+            with open(file_path, "wb") as f:
+                content = await file.read()
+                f.write(content)
+            saved_files.append(file.filename)
+        except Exception as e:
+            errors.append(f"Failed to save {file.filename}: {str(e)}")
+            
+    if len(saved_files) == 0 and errors:
+        raise HTTPException(status_code=400, detail="; ".join(errors))
+        
+    return {
+        "status": "success",
+        "message": f"Successfully uploaded {len(saved_files)} file(s).",
+        "uploaded_files": saved_files,
+        "errors": errors
+    }
 
 @app.post("/api/ingest")
 async def run_api_ingest():
